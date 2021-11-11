@@ -1,0 +1,8 @@
+services:
+  varnish:
+    container_name: varnish
+    image: varnish:latest
+    ports:
+      - "8090:80"
+    volumes:
+      - ./varnish.vcl:/etc/varnish/default.vcl:ro
