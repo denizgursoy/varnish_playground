@@ -1,11 +1,10 @@
 vcl 4.0;
 
 backend default {
-  .host = "www.nytimes.com:80";
+    .host = "host.docker.internal";
+    .port = "1323";
 }
 
 sub vcl_recv {
-    if(req.method == "GET"){
-        return (synth(404));
-    }
+   set req.backend_hint=default;
 }
