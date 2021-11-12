@@ -1,9 +1,9 @@
 package main
 
 import (
-	"net/http"
-
+	"fmt"
 	"github.com/labstack/echo/v4"
+	"net/http"
 )
 
 func main() {
@@ -14,6 +14,8 @@ func main() {
 
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
+		c.Response().Header().Set("Cache-Control", "public, max-age=3600, stale-while-revalidate=30000")
+		fmt.Println("new Request")
 		return c.JSON(http.StatusOK, mpa)
 	})
 	e.Logger.Fatal(e.Start(":1323"))
