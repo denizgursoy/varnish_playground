@@ -24,6 +24,7 @@ func main() {
 	})
 
 	e.GET("/uncached", func(c echo.Context) error {
+		c.Response().Header().Set("Cache-Control", "no-cache,no-store")
 		fmt.Println("Request for uncached data")
 		return c.JSON(http.StatusOK, uncachedData)
 	})
