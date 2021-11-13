@@ -7,16 +7,26 @@ import (
 )
 
 func main() {
-	mpa := map[string]string{
-		"key":  "value",
-		"key1": "value1",
+	cachedData := map[string]string{
+		"cached": "data",
+	}
+
+	uncachedData := map[string]string{
+		"uncachedData": "data",
 	}
 
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
+
+	e.GET("/cached", func(c echo.Context) error {
 		c.Response().Header().Set("Cache-Control", "public, max-age=3600, stale-while-revalidate=30000")
-		fmt.Println("new Request")
-		return c.JSON(http.StatusOK, mpa)
+		fmt.Println("Request for cached data")
+		return c.JSON(http.StatusOK, cachedData)
 	})
+
+	e.GET("/uncachedData", func(c echo.Context) error {
+		fmt.Println("Request for uncached data")
+		return c.JSON(http.StatusOK, uncachedData)
+	})
+
 	e.Logger.Fatal(e.Start(":1323"))
 }
