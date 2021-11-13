@@ -23,7 +23,7 @@ func main() {
 		return c.JSON(http.StatusOK, cachedData)
 	})
 
-	e.GET("/uncachedData", func(c echo.Context) error {
+	e.GET("/uncached", func(c echo.Context) error {
 		fmt.Println("Request for uncached data")
 		return c.JSON(http.StatusOK, uncachedData)
 	})

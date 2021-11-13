@@ -1,7 +1,7 @@
 vcl 4.0;
 
 backend default {
-  .host = "127.0.0.1";
-  .port = "8080";
+  .host = "host.docker.internal";
+  .port = "1323";
 }
 
