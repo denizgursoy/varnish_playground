@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: varnish
+  labels:
+    name: varnish
+data:
+  default.vcl: |+
+    vcl 4.1;
+    backend default none;
+    sub vcl_recv {
+        if (req.url == "/varnish-ping") {
+            return(synth(200));
+        }
+        if (req.url == "/varnish-ready") {
+            return(synth(200));
+        }
+        return(synth(200,"Welcome"));
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: varnish
+  labels:
+    name: varnish
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: varnish-http
+  selector:
+    name: varnish
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: varnish-headless
+  labels:
+    name: varnish
+spec:
+  clusterIP: None
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: varnish-http
+  selector:
+    name: varnish
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: varnish
+  labels:
+    name: varnish
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: varnish
+  template:
+    metadata:
+      labels:
+        name: varnish
+    spec:
+      containers:
+        - name: varnish
+          image: "varnish:stable"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /varnish-ping
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /varnish-ready
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 5
+          volumeMounts:
+            - name: varnish
+              mountPath: /etc/varnish
+      volumes:
+        - name: varnish
+          configMap:
+            name: varnish
