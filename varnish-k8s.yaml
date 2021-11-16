@@ -57,7 +57,7 @@ metadata:
   labels:
     name: varnish
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       name: varnish
@@ -128,10 +128,10 @@ spec:
       containers:
         - name: backend
           image: "varnish-backend:0.0.1"
-          imagePullPolicy: Always
+          imagePullPolicy: Never
           env:
             - name: VARNISH_SERVICE_DN
-              value: varnish
+              value: varnish-headless
           ports:
             - name: http
               containerPort: 1323

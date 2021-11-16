@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"net"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -28,6 +30,20 @@ func main() {
 		fmt.Println("Request for uncached data")
 		return c.JSON(http.StatusOK, uncachedData)
 	})
-
+	printVarnishPodIPs()
 	e.Logger.Fatal(e.Start(":1323"))
+
+}
+
+func printVarnishPodIPs() {
+	envVariable := os.Getenv("VARNISH_SERVICE_DN")
+	fmt.Println("envVariable", envVariable)
+	ips, err := net.LookupIP(envVariable)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not get IPs: %v\n", err)
+		os.Exit(1)
+	}
+	for _, ip := range ips {
+		fmt.Println(ip.To4().String())
+	}
 }
