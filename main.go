@@ -5,7 +5,13 @@ import (
 	"github.com/labstack/echo/v4"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"time"
+)
+
+const (
+	PURGE = "PURGE"
 )
 
 func main() {
@@ -35,15 +41,36 @@ func main() {
 
 }
 
-func printVarnishPodIPs() {
-	envVariable := os.Getenv("VARNISH_SERVICE_DN")
-	fmt.Println("envVariable", envVariable)
-	ips, err := net.LookupIP(envVariable)
+func sendPurgeRequestToAllVarnishPods() {
+	for _, ip := range printVarnishPodIPs() {
+		client := http.Client{
+			Timeout: time.Second * 10,
+		}
+		client.Do(&http.Request{
+			Method: PURGE,
+			URL: &url.URL{
+				Host: ip.String(),
+				Path: "/cached",
+			},
+		})
+	}
+}
+
+func getVarnishDomainName() string {
+	return os.Getenv("VARNISH_SERVICE_DN")
+}
+
+func printVarnishPodIPs() []net.IP {
+
+	ips, err := net.LookupIP(getVarnishDomainName())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not get IPs: %v\n", err)
-		os.Exit(1)
 	}
+	var ipv4List []net.IP
 	for _, ip := range ips {
-		fmt.Println(ip.To4().String())
+		if ip.To4() != nil {
+			ipv4List = append(ipv4List, ip)
+		}
 	}
+	return ipv4List
 }
