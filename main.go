@@ -36,6 +36,12 @@ func main() {
 		fmt.Println("Request for uncached data")
 		return c.JSON(http.StatusOK, uncachedData)
 	})
+
+	e.POST("/purge/cache", func(c echo.Context) error {
+		sendPurgeRequestToAllVarnishPods()
+		return c.String(http.StatusOK, "")
+	})
+
 	printVarnishPodIPs()
 	e.Logger.Fatal(e.Start(":1323"))
 
@@ -46,6 +52,7 @@ func sendPurgeRequestToAllVarnishPods() {
 		client := http.Client{
 			Timeout: time.Second * 10,
 		}
+		fmt.Println("Sending purge to -->", ip.String())
 		client.Do(&http.Request{
 			Method: PURGE,
 			URL: &url.URL{
